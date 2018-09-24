@@ -77,4 +77,9 @@ public ArrayList<ServicePoint> getServicePoints(String rego){
 	return alsvps;
 }
 
+public void passBooking (String inString) {
+	
+	System.out.println("In the actual booking implementation");
+}
+
 }

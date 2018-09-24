@@ -2,6 +2,7 @@ package testPackageForCars;
 
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.Computer;
 import org.junit.experimental.ParallelComputer;
 //import org.junit.*;
@@ -12,10 +13,26 @@ public class LocalTestRunner {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		System.out.println("In the jar runner again");
-		runSerial();
-		runParallel();
+		runOnce();
+		//runSerial();
+		//runParallel();
 	}
 	
+	  private static void runOnce() {
+	      System.out.println("--------\nRunning Once");
+	      JUnitCore jUnitCore = new JUnitCore();
+	      Result run = jUnitCore.run(Computer.serial(), CarFleetTestApplication.class);
+	      //Util.printResult(run);
+	      
+	      for (Failure failure : run.getFailures()) {
+	          System.out.println(failure.toString());
+	       }
+	       
+	       System.out.println(run.wasSuccessful());
+	      
+	  }
+	  
+	  /*
 	  private static void runSerial() {
 	      System.out.println("--------\nRunning Serial");
 	      JUnitCore jUnitCore = new JUnitCore();
@@ -57,5 +74,5 @@ public class LocalTestRunner {
 	      
 	      System.out.println("Parallel Times " + duration);
 	  }
-	  
+	  */
 }

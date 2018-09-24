@@ -1,8 +1,8 @@
 package carInsurance;
 
-import basicEntities.Car;
+//import basicEntities.Car;
 
 public interface CarInsurance {
 
-	public int getQuote(Car inCar);
+	public int getQuote(String inRego);
 }

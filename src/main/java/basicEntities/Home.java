@@ -4,6 +4,14 @@ public class Home {
 	private String address1;
 	private String address2;
 	private String postcode;
+
+	public Home(String address1, String address2, String postcode) {
+		super();
+		this.address1 = address1;
+		this.address2 = address2;
+		this.postcode = postcode;
+	}
+	
 	public String getAddress1() {
 		return address1;
 	}
@@ -22,8 +30,4 @@ public class Home {
 	public void setPostcode(String postcode) {
 		this.postcode = postcode;
 	}
-	
-	
-	
-	
 }

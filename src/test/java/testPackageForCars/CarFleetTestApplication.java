@@ -8,10 +8,20 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+//import static org.mockito.Mockito.thenAnswer;
+//import static org.mockito.Mockito.answer;
+
+import static org.mockito.Mockito.timeout;
 //import static org.mockito.Mockito.doThrow();
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
+///
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,16 +32,17 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import basicEntities.Car;
+import basicEntities.Home;
 import businessLogicConsolidationPackage.CarFleetSystem;
 import carInsurance.CarInsurance;
-import carInsurance.CarInsuranceImpl;
 import carPayments.CarPayment;
 import carPayments.Payment;
 import carServicing.CarServicing;
-import carServicing.CarServicingImpl;
 import carServicing.ServicePoint;
 
 // @RunWith attaches a runner with the test class to initialize the test data
@@ -43,7 +54,13 @@ public class CarFleetTestApplication {
 	private Car carToBetested;
 	
 	private CarInsurance carInsur;
-	private CarFleetSystem carFleetSystemInstance;
+	
+	// we create the following entities to allow us to create a home and then spy on it
+	private Home home;
+	private Home spyHome;
+	
+	
+	//private CarFleetSystem carFleetSystemInstance;
 	
 	
    //@InjectMocks annotation is used to create and inject the mock object
@@ -106,15 +123,17 @@ public class CarFleetTestApplication {
 		payments.add(payment3);
 		
 		// we will create a mock of the actual car Insurance.
-		 carFleetSystemInstance = new CarFleetSystem();
+		// carFleetSystemInstance = new CarFleetSystem();
 		//carInsur = mock(CarInsurance.class);
 		//carFleetSystemInstance.set
+		
+		// we will also set up a real home
+		home  = new Home("42, The Cresent","Mortdale","2223");
+		spyHome = spy(home);
    }
    
    @Test
    public void testfirstsvcPoint(){
-
-		
 
 	// set what the mock should do		
       when(carServicing.getServicePoints("abc")).thenReturn(car1svpoints);
@@ -126,7 +145,26 @@ public class CarFleetTestApplication {
       System.out.println("In the 1st test");
       
       Assert.assertEquals(carFleetSystem.getFirstNumberKmsofServicingForCar(carToBetested),11000);
-      
+   }
+   
+   @Test
+   public void verifySpyEffectOnRealInstance() {
+	   spyHome.setPostcode("2500");
+   	  	assertFalse(home.getPostcode().equals(spyHome.getPostcode()));
+   }
+
+
+   @Test
+   public void spySkillUsingWhenThenReturn() {
+        when(spyHome.getAddress1()).thenReturn("SPY");
+        assertEquals("SPY", spyHome.getAddress1());
+   }
+
+
+   @Test
+   public void testCarHomeUsingdoReturn () {
+         doReturn("SPY").when(spyHome).getAddress2();
+         assertEquals("SPY", spyHome.getAddress2());
    }
    
    @Test
@@ -255,7 +293,6 @@ public class CarFleetTestApplication {
       
      // Test the API for first service point
       
-      
       carToBetested.setRego("def");
       System.out.println("In the 8th test");
       
@@ -280,7 +317,7 @@ public class CarFleetTestApplication {
    */
    
    @Test
-   public void testCarMethodOrdera(){
+   public void testCarMethodOrder(){
 	   carToBetested.setRego("abc");
 	// set what the mock should do	
 	   
@@ -300,31 +337,79 @@ public class CarFleetTestApplication {
    
    
    @Test
-   public void testCarInsuranceStartswithCandthenD(){
+   public void testCarInsuranceStartswithCandthenD() {
 
 	// set what the mock should do		
       when(carInsurance.getQuote("cde")).thenReturn(100);
       
-      //test the add functionality
       
-     // Test the API for first service point
-      
-      carToBetested.setRego("cde");
-      
-      System.out.println("In the 11th test");
+      carToBetested.setRego("cde");      
       
       Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"70.0");
 		
+      verify(carInsurance, times(1)).getQuote("cde");
+           
       reset(carInsurance);
+      
+      when(carInsurance.getQuote("cde")).thenReturn(100);
       
       when(carInsurance.getQuote("def")).thenReturn(100);
 
+      carToBetested.setRego("cde");
+      
+      Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"70.0");
+      
+      verify(carInsurance, times(1)).getQuote("cde");
+      
       carToBetested.setRego("def");
       
       Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"100.0");
       
-      reset(carInsurance);
+      verify(carInsurance, times(1)).getQuote("def");
+   }
+   
+   @Test
+   public void testGetQuoteGetsCalledQuickly(){
+
+	// set what the mock should do		
+      when(carInsurance.getQuote("abc")).thenReturn(100);
       
-      //Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"100.0");
-}
+      carToBetested.setRego("abc");
+      
+      Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"90.0");
+      verify(carInsurance, timeout(5)).getQuote("abc");
+   }
+
+   
+   // final case -  we use the Answer interface to provide more of stub, ie where we will actually return something.
+   
+   @Test
+   public void testCarInsuranceAnswerAsStub(){
+
+	// set what the mock should do		
+      //when(carInsurance.getQuote("bcd")).thenReturn(100);
+      
+      when(carInsurance.getQuote("bcd")).thenAnswer(new Answer() {
+    	   @Override
+    	   public Integer answer(InvocationOnMock invocation) throws Throwable {
+    	      //get the arguments passed to mock
+    	      Object[] args = invocation.getArguments();
+    	      //get the mock 
+    	      Object mock = invocation.getMock();	
+    	      //return the result - more logic could be run here if required.
+    	      return 100;
+    	   }
+    	});
+      
+      
+      //test the add functionality
+      
+     // Test the API for first service point
+     
+      carToBetested.setRego("bcd");
+      
+      Assert.assertEquals(carFleetSystem.getInsuranceQuote(carToBetested),"80.0");
+   }
+   
+   
 }

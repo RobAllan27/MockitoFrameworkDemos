@@ -93,6 +93,12 @@ public class CarFleetSystem {
 	}
 	
 	public void getQuoteCar(Car inCar){
+		System.out.println("Getting a quote " + inCar.getRego());
+		try {
+			Thread.sleep(20);
+		}catch (Exception e) {
+			
+		}
 		cins.getQuote(inCar.getRego());
 	}
 		
@@ -115,8 +121,8 @@ public class CarFleetSystem {
 	
 	public String getInsuranceQuote(Car inCar){
 		
-		//ok we have some business logic here wher we apply 10 or 20% deoneding on the car rego -  srtas A 10%, sarts B 20% starts C 30 %  - otherwise no disucount.
-	
+		//ok we have some business logic here wher we apply 10 or 20% depending on the car rego -  starts A 10%, sarts B 20% starts C 30 %  - otherwise no disucount.
+			
 		int fullquote = cins.getQuote(inCar.getRego());
 		
 		String regoStart = inCar.getRego().substring(0, 1);
